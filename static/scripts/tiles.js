@@ -1,0 +1,78 @@
+function loadFromJSON(json) {
+    const dashboard = document.createElement('div');
+    const columnDiv = document.createElement('div');
+    const rowDiv = document.createElement('div');
+    const tileDiv = document.createElement('div');
+    dashboard.classList.add('dashboard');
+    columnDiv.classList.add('column');
+    rowDiv.classList.add('row');
+    tileDiv.classList.add('tile');
+    json.columns.forEach(column => {
+        const columnClone = columnDiv.cloneNode();
+        column.rows.forEach(row => {
+            const rowClone = rowDiv.cloneNode();
+            const height = `${row.height - 10}px`;
+            rowClone.style.height = height;
+            row.tiles.forEach(tile => {
+                const tileClone = tileDiv.cloneNode();
+                setWidth(tileClone, tile.width);
+                // tileClone.textContent = tile.content;
+                rowClone.appendChild(tileClone);
+            });
+            columnClone.appendChild(rowClone);
+        });
+        const lastRow = columnClone.lastElementChild;
+        if (lastRow.children.length !== 0) {
+            const emptyRow = rowDiv.cloneNode();
+            emptyRow.classList.add('empty');
+            columnClone.appendChild(emptyRow);
+        }
+        dashboard.appendChild(columnClone);
+    });
+    return dashboard.outerHTML;
+}
+
+function saveToJSON() {
+    const dashboard = { columns: [] };
+    document.querySelectorAll('.column').forEach(column => {
+        const columnData = { rows: [] };
+        column.querySelectorAll('.row').forEach(row => {
+            if (row.children.length === 0) {
+                return;
+            }
+            const rowData = { height: parseInt(getComputedStyle(row).height) + 10, tiles: [] };
+            row.querySelectorAll('.tile').forEach(tile => {
+                const tileData = { width: getWidth(tile), content: tile.textContent };
+                rowData.tiles.push(tileData);
+            });
+            columnData.rows.push(rowData);
+        });
+        dashboard.columns.push(columnData);
+    });
+    return JSON.stringify(dashboard);
+}
+
+function setInteractableTiles() {
+    document.querySelectorAll('.column').forEach(column => {
+        setResizableRows(column);
+        Array.from(column.children).forEach(row => {
+            setResizableTiles(row, false);
+            interact(row).dropzone({
+                accept: '.tile',
+                overlap: 0.5,
+                ondragenter: dragEnter,
+                ondragleave: dragExit,
+            });
+            for (let i = 0; i < row.children.length; i++) {
+                const tile = row.children[i];
+                interact(tile).draggable({
+                    listeners: {
+                        start: startDrag,
+                        move: drag,
+                        end: endDrag
+                    }
+                });
+            }
+        });
+    });
+};
