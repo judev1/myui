@@ -8,7 +8,8 @@ const defaults = {
 const shadow = {
     tile: null,
     siblings: null,
-    row: null
+    row: null,
+    delete: false
 }
 
 const screen = {
@@ -26,6 +27,7 @@ const colors = [
 ];
 
 function startDrag(event) {
+    activateTrash();
     const tile = event.target;
     const row = tile.parentNode;
     const children = Array.from(row.children);
@@ -106,6 +108,7 @@ function drag(event) {
 }
 
 function endDrag(event) {
+    deactivateTrash();
     const tile = event.target;
 
     tile.style.transform = '';
@@ -114,6 +117,23 @@ function endDrag(event) {
     tile.style.top = '';
     tile.style.left = '';
     tile.classList.remove('dragging');
+
+    if (shadow.delete) {
+        tile.remove();
+        shadow.tile.remove();
+        shadow.row = null;
+        shadow.tile = null;
+        shadow.delete = false;
+        if (defaults.row.children.length === 0) {
+            defaults.row.remove();
+        }
+        defaults.row = null;
+        defaults.index = null;
+        defaults.children = null;
+        defaults.widths = null;
+        saveScreenState();
+        return;
+    }
 
     if (shadow.row) {
         const row = shadow.row;
@@ -187,4 +207,12 @@ function dragExit(event) {
             event.target.classList.add('empty');
         }
     }
+}
+
+function enterTrash(event) {
+    shadow.delete = true;
+}
+
+function exitTrash(event) {
+    shadow.delete = false;
 }

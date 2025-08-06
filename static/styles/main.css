@@ -6,6 +6,7 @@
     --tertiary: #c9d7e6;
     --quaternary: #f0f4f8;
     --accent: #74c0fc;
+    --red: #e03131;
 }
 
 * {
@@ -144,7 +145,7 @@ body {
     outline: 2px solid var(--primary);
 }
 
-.edit-button {
+.action {
     position: fixed;
     right: 20px;
     bottom: 30px;
@@ -164,15 +165,17 @@ body {
         fill 0.2s ease-in-out;
 
 }
-.edit-button.active {
+.action.active {
     background: var(--text);
     fill: var(--tertiary);
 
 }
 
-.edit-button:hover {
+.action.delete:hover {
+    background: var(--red);
+    fill: var(--background);
+}
+
+.action:hover {
     transform: scale(1.1);
-    /* padding: 14px;
-    width: 32px;
-    height: 32px; */
 }

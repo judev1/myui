@@ -137,6 +137,6 @@ function linkCallback(event) {
 
 document.addEventListener('DOMContentLoaded', () => {
     const screen = popFromNavigation() || 'index';
-    addEditButton();
+    addAction();
     navigateTo(screen);
 });
