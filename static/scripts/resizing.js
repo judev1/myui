@@ -149,7 +149,7 @@ function endResizeTile(event) {
     saveScreenState();
 }
 
-function setResizableTiles(row, update=true) {
+function makeTilesResizable(row, update=true) {
     const count = row.children.length;
     if (count === 1) {
         if (update) {
@@ -216,7 +216,7 @@ function endResize(row, height) {
     saveScreenState();
 }
 
-function setResizableRows(column) {
+function makeRowsResizable(column) {
     const count = column.children.length;
     for (let i = 0; i < count; i++) {
         const row = column.children[i];

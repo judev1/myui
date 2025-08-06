@@ -55,7 +55,7 @@ function startDrag(event) {
     tile.classList.add('dragging');
     dashboard.appendChild(tile);
 
-    setResizableTiles(row);
+    makeTilesResizable(row);
 
     const dashboardRect = dashboard.getBoundingClientRect();
     screen.width = dashboardRect.width;
@@ -123,8 +123,8 @@ function endDrag(event) {
         row.insertBefore(tile, shadow.row[index]);
         if (shadow.row !== defaults.row) {
             setWidth(tile, MIN);
-            setResizableTiles(row);
-            setResizableTiles(defaults.row);
+            makeTilesResizable(row);
+            makeTilesResizable(defaults.row);
         } else {
             const widths = defaults.widths;
             const width = widths[defaults.index];
@@ -133,7 +133,7 @@ function endDrag(event) {
             widths.forEach((width, i) => {
                 setWidth(row.children[i], width);
             });
-            setResizableTiles(row, false);
+            makeTilesResizable(row, false);
         }
         var lastRow = defaults.row.parentNode.lastElementChild;
         if (defaults.row.children.length === 0 && defaults.row !== lastRow) {
@@ -145,7 +145,7 @@ function endDrag(event) {
             const emptyRow = document.createElement('div');
             emptyRow.classList.add('row', 'empty');
             column.appendChild(emptyRow);
-            setResizableRows(column);
+            makeRowsResizable(column);
             interact(emptyRow).dropzone({
                 accept: '.tile',
                 overlap: 0.5,

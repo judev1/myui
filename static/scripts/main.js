@@ -8,6 +8,7 @@ function attachLinkCallbacks() {
 function removeDisplays() {
     const navigation = getNavigation();
     const backButton = document.querySelector('.back');
+    toggleEditable(false);
     if (navigation.length === 1) {
         backButton.style.opacity = '0';
         backButton.style.pointerEvents = 'none';
@@ -77,7 +78,7 @@ async function loadScreen(screen, headers={}) {
             const html = loadFromJSON(json);
             loadContent(html);
             addDisplays();
-            setInteractableTiles();
+            // editable = false;
         });
     }).catch(error => {
         console.error('Error:', error);
@@ -136,5 +137,6 @@ function linkCallback(event) {
 
 document.addEventListener('DOMContentLoaded', () => {
     const screen = popFromNavigation() || 'index';
+    addEditButton();
     navigateTo(screen);
 });

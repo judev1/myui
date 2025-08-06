@@ -21,12 +21,6 @@ function loadFromJSON(json) {
             });
             columnClone.appendChild(rowClone);
         });
-        const lastRow = columnClone.lastElementChild;
-        if (lastRow.children.length !== 0) {
-            const emptyRow = rowDiv.cloneNode();
-            emptyRow.classList.add('empty');
-            columnClone.appendChild(emptyRow);
-        }
         dashboard.appendChild(columnClone);
     });
     return dashboard.outerHTML;
@@ -51,28 +45,3 @@ function saveToJSON() {
     });
     return JSON.stringify(dashboard);
 }
-
-function setInteractableTiles() {
-    document.querySelectorAll('.column').forEach(column => {
-        setResizableRows(column);
-        Array.from(column.children).forEach(row => {
-            setResizableTiles(row, false);
-            interact(row).dropzone({
-                accept: '.tile',
-                overlap: 0.5,
-                ondragenter: dragEnter,
-                ondragleave: dragExit,
-            });
-            for (let i = 0; i < row.children.length; i++) {
-                const tile = row.children[i];
-                interact(tile).draggable({
-                    listeners: {
-                        start: startDrag,
-                        move: drag,
-                        end: endDrag
-                    }
-                });
-            }
-        });
-    });
-};
