@@ -1,12 +1,34 @@
 :root {
+    --red: #ff8787;
+    --red-dark: #e03131;
+    --red-light: #f3adad;
+
+    --yellow: #ffd43b;
+    --yellow-dark: #fab005;
+    --yellow-light: #fddf9b;
+
+    --green: #63e6be;
+    --green-dark: #0ca678;
+    --green-light: #9edbc9;
+
+    --blue: #74c0fc;
+    --blue-dark: #146ebe;
+    --blue-light: #a1c5e5;
+
+    --purple: #b197fc;
+    --purple-dark: #6741d9;
+    --purple-light: #c2b3f0;
+
     --text: #183153;
     --background: #fff;
-    --primary: #146ebe;
-    --secondary: #616d8a;
-    --tertiary: #c9d7e6;
-    --quaternary: #f0f4f8;
-    --accent: #74c0fc;
-    --red: #e03131;
+
+    --highlight: var(--blue);
+    --highlight-dark: var(--blue-dark);
+    --highlight-light: var(--blue-light);
+
+    --primary: #616d8a;
+    --secondary: #c9d7e6;
+    --tertiary: #f0f4f8;
 }
 
 * {
@@ -31,8 +53,6 @@ body {
 
 .navigation {
     display: flex;
-    /* top: 0;
-    position: sticky; */
     flex-direction: row;
     justify-content: center;
     align-items: center;
@@ -49,20 +69,20 @@ body {
     transition:
         color 0.2s ease,
         border-color 0.2s ease;
-    color: var(--secondary);
+    color: var(--primary);
     padding: 10px 20px;
     border-bottom: 2px solid transparent;
     user-select: none;
 }
 
 .navigation .item:hover {
-    color: var(--primary);
+    color: var(--highlight-dark);
 }
 
 .navigation .item.active:hover,
 .navigation .item.active {
-    color: var(--primary);
-    border-bottom: 2px solid var(--primary);
+    color: var(--highlight-dark);
+    border-bottom: 2px solid var(--highlight-dark);
 }
 
 .navigation .back {
@@ -106,7 +126,7 @@ body {
 
 .row.empty {
     height: 190px;
-    outline: 2px dashed var(--tertiary);
+    outline: 2px dashed var(--highlight-light);
     border-radius: 10px;
 }
 
@@ -115,7 +135,7 @@ body {
     height: 100%;
     /* border-radius: 10px; */
     background: transparent;
-    outline: 2px dashed var(--tertiary);
+    outline: 2px dashed var(--highlight-light);
     transition:
         background 0.2s ease-in-out,
         outline 0.2s ease-in-out,
@@ -124,7 +144,7 @@ body {
 
 .tile.edit {
     border-radius: 10px;
-    background: var(--tertiary);
+    background: var(--highlight-light);
     outline: 2px dashed transparent;
 }
 
@@ -137,12 +157,12 @@ body {
     background:
         repeating-linear-gradient(
             45deg,
-            var(--primary),
-            var(--primary) 2px,
+            var(--highlight-dark),
+            var(--highlight-dark) 2px,
             transparent 2px,
             transparent 20px
         );
-    outline: 2px solid var(--primary);
+    outline: 2px solid var(--highlight-dark);
 }
 
 .action {
@@ -153,27 +173,23 @@ body {
     height: 30px;
     border-radius: 50%;
     padding: 15px;
-    background: var(--tertiary);
+    background: var(--highlight-light);
     fill: var(--text);
     cursor: pointer;
     transition:
         transform 0.2s ease-in-out,
-        padding 0.2s ease-in-out,
-        width 0.2s ease-in-out,
-        height 0.2s ease-in-out,
         background 0.2s ease-in-out,
         fill 0.2s ease-in-out;
 
 }
 .action.active {
-    background: var(--text);
-    fill: var(--tertiary);
+    background: var(--highlight-dark);
+    fill: var(--background);
 
 }
 
 .action.delete:hover {
-    background: var(--red);
-    fill: var(--background);
+    background: var(--red-dark);
 }
 
 .action:hover {
