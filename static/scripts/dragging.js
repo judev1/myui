@@ -17,15 +17,6 @@ const screen = {
     height: null
 }
 
-const colors = [
-    '#FF5733',
-    '#33FF57',
-    '#3357FF',
-    '#F0F0F0',
-    '#FF33A1',
-    '#A133FF',
-];
-
 function startDrag(event) {
     activateTrash();
     const tile = event.target;
@@ -81,10 +72,14 @@ function drag(event) {
         offsetX = screen.width - width;
     }
 
+    var maxHeight = screen.height - height + navHeight;
+    if (maxHeight < window.innerHeight - height - 1) {
+        maxHeight = window.innerHeight - height - 1;
+    }
     if (offsetY < navHeight) {
         offsetY = navHeight;
-    } else if (offsetY > screen.height - height + navHeight) {
-        offsetY = screen.height - height + navHeight;
+    } else if (offsetY > maxHeight) {
+        offsetY = maxHeight;
     }
 
     tile.style.transform =
@@ -120,22 +115,12 @@ function endDrag(event) {
 
     if (shadow.delete) {
         tile.remove();
-        shadow.tile.remove();
         shadow.row = null;
-        shadow.tile = null;
         shadow.delete = false;
         if (defaults.row.children.length === 0) {
             defaults.row.remove();
         }
-        defaults.row = null;
-        defaults.index = null;
-        defaults.children = null;
-        defaults.widths = null;
-        saveScreenState();
-        return;
-    }
-
-    if (shadow.row) {
+    } else if (shadow.row) {
         const row = shadow.row;
         const siblings = Array.from(row.children);
         const index = siblings.indexOf(shadow.tile);
@@ -180,6 +165,7 @@ function endDrag(event) {
         defaults.widths.forEach((width, i) => {
             setWidth(defaults.children[i], width);
         });
+        row.classList.remove('empty');
     }
 
     defaults.row = null;
