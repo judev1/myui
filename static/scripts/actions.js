@@ -1,8 +1,30 @@
-var editable = false;
+var editing = false;
 
-const icons = {
-    'pencil': null,
-    'trash': null,
+function addActions() {
+    const action = document.createElement('div');
+    action.classList.add('action');
+    action.addEventListener('click', () => toggleEditable());
+    action.appendChild(icons['pencil']);
+
+    const body = document.querySelector('body');
+    body.appendChild(action);
+
+    makeFadable(action);
+    interact(action).dropzone({
+        accept: '.tile',
+        ondragenter: enterTrash,
+        ondragleave: exitTrash,
+    });
+
+    const back = document.createElement('div');
+    back.classList.add('back', 'item');
+    back.addEventListener('click', () => navigateBack());
+    back.innerHTML = 'Back';
+
+    const navigation = document.querySelector('.navigation');
+    navigation.appendChild(back);
+
+    makeFadable(back);
 }
 
 function makeEditable() {
@@ -58,46 +80,11 @@ function removeEditable() {
     });
 }
 
-function addAction() {
-    var action = document.querySelector('.action');
-    if (action) {
-        return;
-    }
-    const parser = new DOMParser();
-    fetch('/static/images/pencil.svg')
-        .then(response => response.text())
-        .then(svg => {
-            const body = document.querySelector('body');
-            action = document.createElement('div');
-            const doc = parser.parseFromString(svg, 'image/svg+xml');
-            const icon = doc.querySelector('svg');
-            icons['pencil'] = icon;
-            action.classList.add('action');
-            action.addEventListener('click', () => toggleEditable());
-            action.appendChild(icon);
-            body.appendChild(action);
-            interact(action).dropzone({
-                accept: '.tile',
-                ondragenter: enterTrash,
-                ondragleave: exitTrash,
-            });
-            fetch('/static/images/trash.svg')
-                .then(response => response.text())
-                .then(svg => {
-                    const doc = parser.parseFromString(svg, 'image/svg+xml');
-                    const icon = doc.querySelector('svg');
-                    icons['trash'] = icon;
-            });
-            setTimeout(() => {
-                action.style.opacity = '1';
-            }, 100);
-    });
-}
-
 function toggleEditable(override = null) {
-    editable = override !== null ? override : !editable;
+    editing = override !== null ? override : !editing;
     const action = document.querySelector('.action');
-    if (editable) {
+    fadeIn(action);
+    if (editing) {
         action.classList.add('active');
         makeEditable();
     } else {
