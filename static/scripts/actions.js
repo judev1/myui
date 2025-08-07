@@ -51,15 +51,7 @@ function makeEditable() {
                 });
             }
         });
-        const emptyRow = document.createElement('div');
-        emptyRow.classList.add('row', 'empty');
-        interact(emptyRow).dropzone({
-            accept: '.tile',
-            overlap: 0.5,
-            ondragenter: dragEnter,
-            ondragleave: dragExit,
-        });
-        column.appendChild(emptyRow);
+        newTileRow(column);
     });
 };
 
@@ -74,7 +66,7 @@ function removeEditable() {
             });
         });
         const lastRow = column.lastElementChild;
-        if (lastRow.children.length === 0) {
+        if (lastRow.classList.contains('empty')) {
             column.removeChild(lastRow);
         }
     });
@@ -91,6 +83,56 @@ function toggleEditable(override = null) {
         action.classList.remove('active');
         removeEditable();
     }
+}
+
+function isEmpty(row) {
+    return row.classList.contains('empty') || row.children.length === 0;
+}
+
+function isLast(row) {
+    const column = row.parentNode;
+    return column.lastElementChild === row;
+}
+
+function newTile(event) {
+    const row = event.currentTarget;
+    row.removeEventListener('click', newTile);
+    // get row index
+    const rowIndex = Array.from(row.parentNode.children).indexOf(row);
+    console.log('new tile in row', rowIndex, row);
+    const tile = document.createElement('div');
+    tile.classList.add('tile', 'edit');
+    tile.style.width = 'calc(100% - 0px)';
+    interact(tile).draggable({
+        listeners: {
+            start: startDrag,
+            move: drag,
+            end: endDrag
+        }
+    });
+    row.classList.remove('empty');
+    row.querySelector('.add').remove();
+    row.appendChild(tile);
+    makeTilesResizable(row);
+    newTileRow(row.parentNode);
+    saveScreenState();
+}
+
+function newTileRow(column) {
+    const row = document.createElement('div');
+    row.classList.add('row', 'empty');
+    interact(row).dropzone({
+        accept: '.tile',
+        overlap: 0.5,
+        ondragenter: dragEnter,
+        ondragleave: dragExit,
+    });
+    row.addEventListener('click', newTile);
+    const plus = document.createElement('div');
+    plus.classList.add('add');
+    plus.appendChild(icons['plus'].cloneNode(true));
+    row.appendChild(plus);
+    column.appendChild(row);
 }
 
 function activateTrash() {

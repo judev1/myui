@@ -127,6 +127,10 @@ body {
     border-radius: 10px;
 }
 
+.row.empty.active {
+    outline: none;
+}
+
 .tile {
     display: flex;
     height: 100%;
@@ -163,7 +167,7 @@ body {
 
 .action {
     position: fixed;
-    right: 20px;
+    right: 30px;
     bottom: 30px;
     width: 30px;
     height: 30px;
@@ -191,3 +195,24 @@ body {
 .action:hover {
     transform: scale(1.1);
 }
+
+.add {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.add svg {
+    width: 50px;
+    height: 50px;
+    fill: var(--highlight-light);
+    transition: fill 0.2s ease-in-out;
+}
+
+/* .add:hover svg {
+    display: none;
+} */

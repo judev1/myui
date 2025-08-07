@@ -37,7 +37,7 @@ async function navigateTo(screen) {
 
 async function navigateBack() {
     if (navigation.length === 1) { return }
-    navigation.pop();
+    popFromNavigation();
     await loadScreen(getScreen());
 }
 

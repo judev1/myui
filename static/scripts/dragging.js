@@ -1,15 +1,15 @@
 const defaults = {
     row: null,
     index: null,
-    children: null,
-    widths: null
+    widths: null,
+    delete: false,
+    drop: false
 }
 
 const shadow = {
     tile: null,
-    siblings: null,
     row: null,
-    delete: false
+    drop: false
 }
 
 const screen = {
@@ -26,7 +26,6 @@ function startDrag(event) {
 
     defaults.row = row;
     defaults.index = children.indexOf(tile);
-    defaults.children = children;
     defaults.widths = children.map(
         child => getWidth(child)
     );
@@ -113,24 +112,17 @@ function endDrag(event) {
     tile.style.left = '';
     tile.classList.remove('dragging');
 
-    if (shadow.delete) {
+    if (defaults.delete) {
         tile.remove();
         shadow.row = null;
-        shadow.delete = false;
-        if (defaults.row.children.length === 0) {
-            defaults.row.remove();
-        }
-    } else if (shadow.row) {
+        defaults.delete = false;
+    } else if (shadow.drop) {
         const row = shadow.row;
         const siblings = Array.from(row.children);
         const index = siblings.indexOf(shadow.tile);
         row.removeChild(shadow.tile);
-        row.insertBefore(tile, shadow.row[index]);
-        if (shadow.row !== defaults.row) {
-            setWidth(tile, MIN);
-            makeTilesResizable(row);
-            makeTilesResizable(defaults.row);
-        } else {
+        row.insertBefore(tile, row.children[index]);
+        if (defaults.drop) {
             const widths = defaults.widths;
             const width = widths[defaults.index];
             widths.splice(defaults.index, 1);
@@ -139,66 +131,85 @@ function endDrag(event) {
                 setWidth(row.children[i], width);
             });
             makeTilesResizable(row, false);
+        } else {
+            if (isEmpty(row)) {
+                row.classList.remove('empty');
+                row.querySelector('.add').remove();
+                newTileRow(row.parentNode);
+            }
+            setWidth(tile, MIN);
+            makeTilesResizable(row);
+            makeTilesResizable(defaults.row);
         }
-        var lastRow = defaults.row.parentNode.lastElementChild;
-        if (defaults.row.children.length === 0 && defaults.row !== lastRow) {
-            defaults.row.remove();
-        }
-        var lastRow = shadow.row.parentNode.lastElementChild;
-        if (row.children.length !== 0 && row === lastRow) {
-            const column = row.parentNode;
-            const emptyRow = document.createElement('div');
-            emptyRow.classList.add('row', 'empty');
-            column.appendChild(emptyRow);
-            makeRowsResizable(column);
-            interact(emptyRow).dropzone({
-                accept: '.tile',
-                overlap: 0.5,
-                ondragenter: dragEnter,
-                ondragleave: dragExit,
-            });
-        }
-        shadow.row = null;
     } else {
         const row = defaults.row;
         row.insertBefore(tile, row.children[defaults.index]);
         defaults.widths.forEach((width, i) => {
-            setWidth(defaults.children[i], width);
+            setWidth(row.children[i], width);
         });
         row.classList.remove('empty');
     }
 
+    if (isEmpty(defaults.row)) {
+        defaults.row.remove();
+    }
+
     defaults.row = null;
     defaults.index = null;
-    defaults.children = null;
     defaults.widths = null;
+    defaults.drop = false;
 
+    shadow.row = null;
     shadow.tile.remove();
     shadow.tile = null;
+    shadow.drop = false;
+
     saveScreenState();
 }
 
 function dragEnter(event) {
-    if (event.target.children.length < 4) {
-        shadow.row = event.target;
-        shadow.row.classList.remove('empty');
+    const row = event.target;
+    shadow.row = row;
+    if (row.children.length < 4) {
+        row.classList.add('active');
+        if (isEmpty(row)) {
+            if (isLast(row)) {
+                const plus = row.querySelector('.add');
+                plus.style.display = 'none';
+            } else {
+                row.classList.remove('empty');
+            }
+        }
+        shadow.drop = true;
+        if (row === defaults.row) {
+            defaults.drop = true;
+        }
     }
 }
 
 function dragExit(event) {
     if (shadow.row) {
-        shadow.row.removeChild(shadow.tile);
-        shadow.row = null;
-        if (event.target.children.length === 0) {
-            event.target.classList.add('empty');
+        const row = shadow.row;
+        row.classList.remove('active');
+        row.removeChild(shadow.tile);
+        if (isEmpty(row)) {
+            if (isLast(row)) {
+                const plus = row.querySelector('.add');
+                plus.style.display = '';
+            } else {
+                row.classList.add('empty');
+            }
         }
+        shadow.drop = false;
+        defaults.drop = false;
+        shadow.row = null;
     }
 }
 
 function enterTrash(event) {
-    shadow.delete = true;
+    defaults.delete = true;
 }
 
 function exitTrash(event) {
-    shadow.delete = false;
+    defaults.delete = false;
 }

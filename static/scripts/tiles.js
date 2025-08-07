@@ -31,9 +31,7 @@ function saveToJSON() {
     document.querySelectorAll('.column').forEach(column => {
         const columnData = { rows: [] };
         column.querySelectorAll('.row').forEach(row => {
-            if (row.children.length === 0) {
-                return;
-            }
+            if (row.classList.contains('empty')) return;
             const rowData = { height: parseInt(getComputedStyle(row).height) + 10, tiles: [] };
             row.querySelectorAll('.tile').forEach(tile => {
                 const tileData = { width: getWidth(tile), content: tile.textContent };
