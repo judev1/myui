@@ -34,20 +34,20 @@ function saveScreenState() {
 }
 
 function preLoadUpdate() {
-    const action = document.querySelector('.action');
-    action.classList.remove('active');
+    const edit = document.getElementById('edit');
+    edit.classList.remove('active');
     editing = false
-    const back = document.querySelector('.back');
+    const back = document.getElementById('back');
     if (navigation.length === 1) {
         fadeOut(back);
     }
 }
 
 function postLoadUpdate() {
-    const action = document.querySelector('.action');
-    fadeIn(action);
+    const edit = document.getElementById('edit');
+    fadeIn(edit);
 
-    const back = document.querySelector('.back');
+    const back = document.getElementById('back');
     if (navigation.length > 1) {
         fadeIn(back);
     }

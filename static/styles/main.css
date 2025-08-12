@@ -90,7 +90,135 @@ body {
     left: 20px;
 }
 
+.action {
+    position: fixed;
+    border-radius: 50%;
+    background: var(--highlight-light);
+    fill: var(--text);
+    cursor: pointer;
+    transition:
+        transform 0.2s ease-in-out,
+        background 0.2s ease-in-out,
+        fill 0.2s ease-in-out,
+        right 0.2s ease-in-out,
+        bottom 0.2s ease-in-out;
+
+}
+
+.action:hover {
+    transform: scale(1.1);
+}
+
+.action.active {
+    background: var(--highlight-dark);
+    fill: var(--background);
+}
+
+.action.edit {
+    right: 30px;
+    bottom: 30px;
+    width: 30px;
+    height: 30px;
+    padding: 15px;
+    z-index: 1000;
+}
+
+.action.spawn {
+    /* center along x axis */
+    right: calc(50% - 30px);
+    bottom: 30px;
+    width: 30px;
+    height: 30px;
+    padding: 15px;
+    z-index: 1002;
+}
+
+.action.spawn.add:hover {
+    background: var(--green-dark);
+    fill: var(--background);
+}
+
+.action.spawn.trash:hover {
+    background: var(--red-dark);
+    fill: var(--background);
+}
+
+.action.edit-type {
+    bottom: 40px;
+    right: 40px;
+    width: 20px;
+    height: 20px;
+    padding: 10px;
+    z-index: 999;
+}
+
+.action.edit-type.edit-tile.editing {
+    right: calc(30px + 60px + 110px);
+}
+.action.edit-type.edit-row.editing {
+    right: calc(30px + 60px + 60px);
+}
+.action.edit-type.edit-column.editing {
+    right: calc(30px + 60px + 10px);
+}
+
+.dummy {
+    display: none;
+    position: fixed;
+    /* width: 100px;
+    height: 200px; */
+    top: 0;
+    left: 0;
+    opacity: 0.5;
+    border-radius: 10px;
+    background: var(--highlight-light);
+    z-index: 1001;
+}
+
 .content {
+    width: calc(100% - 40px);
+    padding: 20px;
+}
+
+.dashboard {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    gap: 10px;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-height: 200px;
+    gap: 10px;
+    /* outline: 2px solid transparent;
+    transition: outline 0.2s ease-in-out; */
+}
+
+.column.editing {
+    opacity: 0.5;
+    border-radius: 10px;
+    background: var(--highlight-light);
+}
+
+.editing.shadow {
+    outline: 2px solid var(--highlight);
+    background:
+        repeating-linear-gradient(
+            45deg,
+            var(--highlight),
+            var(--highlight) 2px,
+            transparent 2px,
+            transparent 20px
+        );
+}
+
+
+/* .content {
     width: 100%;
 }
 
@@ -163,56 +291,4 @@ body {
             transparent 20px
         );
     outline: 2px solid var(--highlight-dark);
-}
-
-.action {
-    position: fixed;
-    right: 30px;
-    bottom: 30px;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    padding: 15px;
-    background: var(--highlight-light);
-    fill: var(--text);
-    cursor: pointer;
-    transition:
-        transform 0.2s ease-in-out,
-        background 0.2s ease-in-out,
-        fill 0.2s ease-in-out;
-
-}
-.action.active {
-    background: var(--highlight-dark);
-    fill: var(--background);
-
-}
-
-.action.delete:hover {
-    background: var(--red-dark);
-}
-
-.action:hover {
-    transform: scale(1.1);
-}
-
-.add {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    border-radius: 10px;
-    cursor: pointer;
-}
-
-.add svg {
-    width: 50px;
-    height: 50px;
-    fill: var(--highlight-light);
-    transition: fill 0.2s ease-in-out;
-}
-
-/* .add:hover svg {
-    display: none;
 } */

@@ -1,154 +1,123 @@
+var add = null;
+var trash = null;
 var editing = false;
 
+var removeEdit = null;
+var removeElement = null;
+var resizeElement = null;
+
 function addActions() {
-    const action = document.createElement('div');
-    action.classList.add('action');
-    action.addEventListener('click', () => toggleEditable());
-    action.appendChild(icons['pencil']);
+    const body = document.body;
+    const navbar = document.querySelector('.navigation');
 
-    const body = document.querySelector('body');
-    body.appendChild(action);
+    const edit = document.createElement('div');
+    edit.id = 'edit';
+    edit.classList.add('action', 'edit');
+    edit.addEventListener('click', () => toggleEditing());
+    edit.appendChild(icons['pencil']);
+    body.appendChild(edit);
 
-    makeFadable(action);
-    interact(action).dropzone({
-        accept: '.tile',
-        ondragenter: enterTrash,
-        ondragleave: exitTrash,
+    add = document.createElement('div');
+    add.id = 'spawn';
+    add.classList.add('action', 'spawn', 'add');
+    add.appendChild(icons['plus']);
+    body.appendChild(add);
+
+    trash = document.createElement('div');
+    trash.id = 'trash';
+    trash.classList.add('action', 'spawn', 'trash');
+    trash.appendChild(icons['trash']);
+    body.appendChild(trash);
+
+    interact(trash).dropzone({
+        ondragenter: (event) => {
+            dropzone.element = event.target;
+        }
     });
 
+    const tileEdit = document.createElement('div');
+    tileEdit.id = 'tile-edit';
+    tileEdit.classList.add('action', 'edit-type', 'edit-tile');
+    tileEdit.appendChild(icons['tile']);
+    tileEdit.addEventListener('click', () => toggleEditType(tileEdit));
+    body.appendChild(tileEdit);
+
+    const rowEdit = document.createElement('div');
+    rowEdit.id = 'row-edit';
+    rowEdit.classList.add('action', 'edit-type', 'edit-row');
+    rowEdit.appendChild(icons['row']);
+    rowEdit.addEventListener('click', () => toggleEditType(rowEdit));
+    body.appendChild(rowEdit);
+
+    const columnEdit = document.createElement('div');
+    columnEdit.id = 'column-edit';
+    columnEdit.classList.add('action', 'edit-type', 'edit-column');
+    columnEdit.appendChild(icons['column']);
+    columnEdit.addEventListener('click', () => toggleEditType(columnEdit));
+    body.appendChild(columnEdit);
+
     const back = document.createElement('div');
+    back.id = 'back';
     back.classList.add('back', 'item');
     back.addEventListener('click', () => navigateBack());
     back.innerHTML = 'Back';
+    navbar.appendChild(back);
 
-    const navigation = document.querySelector('.navigation');
-    navigation.appendChild(back);
+    makeFadable(edit);
+    makeFadable(add);
+    makeFadable(trash);
+
+    makeFadable(tileEdit);
+    makeFadable(rowEdit);
+    makeFadable(columnEdit);
 
     makeFadable(back);
 }
 
-function makeEditable() {
-    document.querySelectorAll('.column').forEach(column => {
-        makeRowsResizable(column);
-        Array.from(column.children).forEach(row => {
-            row.classList.add('edit');
-            makeTilesResizable(row, false);
-            interact(row).dropzone({
-                accept: '.tile',
-                overlap: 0.5,
-                ondragenter: dragEnter,
-                ondragleave: dragExit,
-            });
-            for (let i = 0; i < row.children.length; i++) {
-                const tile = row.children[i];
-                tile.classList.add('edit');
-                interact(tile).draggable({
-                    listeners: {
-                        start: startDrag,
-                        move: drag,
-                        end: endDrag
-                    }
-                });
-            }
-        });
-        newTileRow(column);
-    });
-};
-
-function removeEditable() {
-    document.querySelectorAll('.column').forEach(column => {
-        Array.from(column.children).forEach(row => {
-            row.classList.remove('edit');
-            interact(row).unset();
-            row.querySelectorAll('.tile').forEach(tile => {
-                tile.classList.remove('edit');
-                interact(tile).unset();
-            });
-        });
-        const lastRow = column.lastElementChild;
-        if (lastRow.classList.contains('empty')) {
-            column.removeChild(lastRow);
+function toggleEditType(element) {
+    if (removeEdit) {
+        removeEdit();
+    }
+    element.parentNode.querySelectorAll('.edit-type').forEach(e => {
+        if (e === element) {
+            e.classList.add('active');
+        } else {
+            e.classList.remove('active');
         }
     });
-}
-
-function toggleEditable(override = null) {
-    editing = override !== null ? override : !editing;
-    const action = document.querySelector('.action');
-    fadeIn(action);
-    if (editing) {
-        action.classList.add('active');
-        makeEditable();
-    } else {
-        action.classList.remove('active');
-        removeEditable();
+    const type = element.id;
+    if (type === 'column-edit') {
+        editColumns();
     }
 }
 
-function isEmpty(row) {
-    return row.classList.contains('empty') || row.children.length === 0;
-}
-
-function isLast(row) {
-    const column = row.parentNode;
-    return column.lastElementChild === row;
-}
-
-function newTile(event) {
-    const row = event.currentTarget;
-    row.removeEventListener('click', newTile);
-    // get row index
-    const rowIndex = Array.from(row.parentNode.children).indexOf(row);
-    console.log('new tile in row', rowIndex, row);
-    const tile = document.createElement('div');
-    tile.classList.add('tile', 'edit');
-    tile.style.width = 'calc(100% - 0px)';
-    interact(tile).draggable({
-        listeners: {
-            start: startDrag,
-            move: drag,
-            end: endDrag
+function toggleEditing(override = null) {
+    editing = override !== null ? override : !editing;
+    const edit = document.getElementById('edit');
+    fadeIn(edit);
+    if (editing) {
+        edit.classList.add('active');
+        document.querySelectorAll('.edit-type').forEach(editType => {
+            editType.classList.add('editing');
+            fadeIn(editType);
+        });
+    } else {
+        fadeOut(add);
+        edit.classList.remove('active');
+        document.querySelectorAll('.edit-type').forEach(editType => {
+            editType.classList.remove('editing', 'active');
+            fadeOut(editType);
+        });
+        if (removeEdit) {
+            removeEdit();
         }
-    });
-    row.classList.remove('empty');
-    row.querySelector('.add').remove();
-    row.appendChild(tile);
-    makeTilesResizable(row);
-    newTileRow(row.parentNode);
-    saveScreenState();
-}
-
-function newTileRow(column) {
-    const row = document.createElement('div');
-    row.classList.add('row', 'empty');
-    interact(row).dropzone({
-        accept: '.tile',
-        overlap: 0.5,
-        ondragenter: dragEnter,
-        ondragleave: dragExit,
-    });
-    row.addEventListener('click', newTile);
-    const plus = document.createElement('div');
-    plus.classList.add('add');
-    plus.appendChild(icons['plus'].cloneNode(true));
-    row.appendChild(plus);
-    column.appendChild(row);
+    }
 }
 
 function activateTrash() {
-    const action = document.querySelector('.action');
-    action.classList.add('delete');
-    if (icons['trash']) {
-        action.innerHTML = '';
-        action.appendChild(icons['trash']);
-    }
+    fadeIn(trash);
 }
 
 function deactivateTrash() {
-    const action = document.querySelector('.action');
-    action.classList.remove('delete');
-    if (icons['pencil']) {
-        action.innerHTML = '';
-        action.appendChild(icons['pencil']);
-    }
+    fadeOut(trash);
 }

@@ -1,231 +1,204 @@
-const INCREMENT = 100 / 12;
-const MIN = INCREMENT * 2;
-
 const resizing = {
-    tile: null,
-    lastWidth: null,
-    height: null
+    element: null,
 }
 
-function round(num, incr) {
-    return Math.round(parseFloat(num) / incr) * incr;
+function round(num, increment) {
+    return Math.round(parseFloat(num) / increment) * increment;
 }
 
-function setWidth(tile, width) {
+function setWidth(element, width) {
     width = round(width, 0.001);
     const offset = 10 * (1 - width / 100);
-    tile.style.width = `calc(${width}% - ${offset}px)`;
+    element.style.width = `calc(${width}% - ${offset}px)`;
 }
 
-function getWidth(tile) {
-    const text = tile.style.width;
+function getWidth(element) {
+    const text = element.style.width;
     const match = text.match(/calc\((.*)%/);
     return parseFloat(match[1]);
 }
 
-function resizeTileStart(event) {
-    resizing.tile = event.target;
-    resizing.lastWidth = getWidth(resizing.tile);
+function fitChildren(parent) {
+    const children = Array.from(parent.children);
+    const count = children.length;
+    if (count === 0) return;
+    var width = 0
+    children.forEach(child => {
+        width += getWidth(child);
+    });
+    const factor = 100 / width;
+    children.forEach(child => {
+        setWidth(child, getWidth(child) * factor);
+    });
 }
 
-function resizeTile(event) {
-    const tile = resizing.tile;
-    const row = tile.parentNode;
-
-    const rowWidth = row.getBoundingClientRect().width;
-    const ratio = event.deltaRect.width / rowWidth * 100;
-    const lastWidth = round(resizing.lastWidth, 0.001);
-    var width = round(lastWidth + ratio, 0.001);
-
-    if (event.deltaRect.bottom !== 0) {
-        const height = event.rect.height;
-        row.style.height = `${height}px`;
+function fitNewChild(parent, element, childWidth) {
+    const children = Array.from(parent.children);
+    const count = children.length;
+    if (count === 0) return;
+    if (!childWidth) {
+        const boxWidth = parent.getBoundingClientRect().width - 10 * (count - 1);
+        childWidth = (dragged.width / boxWidth) * 100;
     }
-
-    if (width < MIN) {
-        width = MIN;
-    }
-
-    if (width === lastWidth) {
-        return;
-    } else if (width < lastWidth) {
-        var adjacent = null;
-        if (event.edges.left) {
-            adjacent = tile.previousElementSibling;
-        } else if (event.edges.right) {
-            adjacent = tile.nextElementSibling;
+    var width = -childWidth;
+    children.forEach(child => {
+        if (child !== element) {
+            width += getWidth(child);
         }
-        const adjacentWidth = getWidth(adjacent);
-        const diff = lastWidth - width;
-        setWidth(adjacent, adjacentWidth + diff);
-    } else {
-        const adjacentArray = [];
-        const index = Array.from(row.children).indexOf(tile);
-        if (event.edges.left) {
-            for (let i = index - 1; i >= 0; i--) {
-                adjacentArray.push(row.children[i]);
-            }
-        } else if (event.edges.right) {
-            for (let i = index + 1; i < row.children.length; i++) {
-                adjacentArray.push(row.children[i]);
-            }
+    });
+    const factor = width / 100;
+    children.forEach(child => {
+        if (child === element) {
+            setWidth(child, childWidth);
+        } else {
+            setWidth(child, getWidth(child) * factor);
         }
-        var overflow = width - lastWidth;
-        for (let i = 0; i < adjacentArray.length; i++) {
-            const adjacent = adjacentArray[i];
-            const adjacentWidth = getWidth(adjacent);
-            if (adjacentWidth - overflow >= MIN) {
-                setWidth(adjacent, adjacentWidth - overflow);
-                overflow = 0;
-                break;
-            } else {
-                setWidth(adjacent, MIN);
-                overflow -= (adjacentWidth - MIN);
-            }
-        }
-        if (overflow > 0) {
-            width -= overflow
-        }
-    }
-    setWidth(tile, width);
-    resizing.lastWidth = width;
+    });
 }
 
-function endResizeTile(event) {
-    const tile = resizing.tile;
-    const row = tile.parentNode;
-    const lastWidth = resizing.lastWidth;
-    var width = round(lastWidth, INCREMENT);
+function startResize(event) {
+    resizing.element = event.target;
+}
 
-    endResize(row, event.rect.height);
-
-    if (width < MIN) {
-        width = MIN;
-    }
-
-    if (width < lastWidth) {
-        var adjacent = null;
-        if (event.edges.left) {
-            adjacent = tile.previousElementSibling;
-        } else if (event.edges.right) {
-            adjacent = tile.nextElementSibling;
-        }
-        const adjacentWidth = getWidth(adjacent);
-        const diff = lastWidth - width;
-        const newWidth = round(adjacentWidth + diff, INCREMENT);
-        setWidth(adjacent, newWidth);
-    } else {
-        const adjacentArray = [];
-        const index = Array.from(row.children).indexOf(tile);
-        if (event.edges.left) {
-            for (let i = index - 1; i >= 0; i--) {
-                adjacentArray.push(row.children[i]);
-            }
-        } else if (event.edges.right) {
-            for (let i = index + 1; i < row.children.length; i++) {
-                adjacentArray.push(row.children[i]);
-            }
-        }
-        var overflow = width - lastWidth;
-        for (let i = 0; i < adjacentArray.length; i++) {
-            const adjacent = adjacentArray[i];
-            const adjacentWidth = getWidth(adjacent);
-            if (adjacentWidth - overflow >= MIN) {
-                setWidth(adjacent, adjacentWidth - overflow);
-                overflow = 0;
-                break;
-            } else {
-                setWidth(adjacent, MIN);
-                overflow -= (adjacentWidth - MIN);
-            }
-        }
-        if (overflow > 0) {
-            width -= overflow
-        }
-    }
-    setWidth(tile, width);
-    resizing.tile = null;
-    resizing.lastWidth = null;
+function endResize(event) {
+    resizeElement(event.target, event.edges);
+    resizing.element = null;
     saveScreenState();
 }
 
-function makeTilesResizable(row, update=true) {
-    const count = row.children.length;
-    if (count === 1) {
-        if (update) {
-            setWidth(row.children[0], 100);
-        }
-        interact(row.children[0]).resizable({
-            edges: { left: false, right: false, bottom: true },
-            listeners: {
-                move: (event) => { resizeRow(row, event.rect.height) },
-                end: (event) => { endResize(row, event.rect.height) }
+function resizeColumn(event) {
+    var column = resizing.element;
+
+    const count = countColumns();
+    const parent = column.parentNode;
+    const parentRect = parent.getBoundingClientRect();
+    const parentWidth = parentRect.width - 10 * (count - 1);
+
+    var oldWidth = getWidth(column);
+    var width = event.rect.width / parentWidth * 100;
+
+    const columns = Array.from(parent.children);
+    var index = columns.indexOf(column);
+
+    var left = event.edges.left;
+    var right = event.edges.right;
+
+    if (left) {
+        if (event.deltaRect.width < 0) {
+            if (index > 0) {
+                index--;
+                left = false;
+                right = true;
+                column = columns[index];
+                width = getWidth(column) + (oldWidth - width);
+                oldWidth = getWidth(column);
             }
-        });
-        return;
-    }
-    const width = 100 / count;
-    for (let i = 0; i < count; i++) {
-        const tile = row.children[i];
-        if (update) {
-            setWidth(tile, width);
         }
-        if (i === 0) {
-            interact(tile).resizable({
-                edges: { left: false, right: true, bottom: true },
-                listeners: {
-                    start: resizeTileStart,
-                    move: resizeTile,
-                    end: endResizeTile
-                }
-            });
-        } else if (i === count - 1) {
-            interact(tile).resizable({
-                edges: { left: true, right: false, bottom: true },
-                listeners: {
-                    start: resizeTileStart,
-                    move: resizeTile,
-                    end: endResizeTile
-                }
+    } else if (right) {
+        if (event.deltaRect.right < 0) {
+            if (index < count - 1) {
+                index++;
+                left = true;
+                right = false;
+                column = columns[index];
+                width = getWidth(column) + (oldWidth - width);
+                oldWidth = getWidth(column);
+            }
+        }
+    }
+
+    if (count === 2) {
+        if (width < 25) {
+            width = 25;
+        } else if (width > 75) {
+            width = 75;
+        }
+        columns.forEach(column => {
+            if (column !== column) {
+                setWidth(column, 100 - width);
+            }
+        })
+    } else if (count === 3) {
+        if (width < 25) {
+            width = 25;
+        } else if (width > 50) {
+            width = 50;
+        }
+
+        var overflow = 0;
+        var first = null;
+        var second = null;
+
+        if (left) {
+            if (index === 1) {
+                first = columns[0];
+            } else if (index === 2) {
+                first = columns[1];
+                second = columns[0];
+            }
+        } else if (right) {
+            if (index === 1) {
+                first = columns[2];
+            } else if (index === 0) {
+                first = columns[1];
+                second = columns[2];
+            }
+        }
+        const totalWidth = getWidth(first) + oldWidth;
+        if (width > totalWidth - 25 && second) {
+            overflow = width - (totalWidth - 25);
+            setWidth(first, 25);
+            setWidth(second, getWidth(second) - overflow);
+        } else {
+            if (width > totalWidth - 25) {
+                width = totalWidth - 25;
+            }
+            setWidth(first, totalWidth - width);
+        }
+    }
+    setWidth(column, width);
+}
+
+function correctColumnWidths(element, edges) {
+    const count = countColumns();
+    var width;
+    var altwidth;
+    var altrounded;
+    if (element) {
+        width = round(getWidth(element), 1);
+        if (edges) {
+            const children = Array.from(element.parentNode.children);
+            const index = children.indexOf(element);
+            if (index !== 0 && edges.left) {
+                altwidth = round(getWidth(children[index - 1]), 1);
+            } else if (index !== count - 1 && edges.right) {
+                altwidth = round(getWidth(children[index + 1]), 1);
+            }
+            altrounded = round(altwidth, 25);
+        }
+    } else {
+        width = 100 / count;
+    }
+    const columns = Array.from(document.querySelectorAll('.column'));
+    if (count === 2) {
+        columns.forEach(column => {
+            setWidth(column, round(getWidth(column), 25));
+        })
+    } else if (count === 3) {
+        const rounded = round(width, 25);
+        console.log('correctColumnWidths', width, rounded, altwidth, altrounded);
+        if (width === rounded || (altwidth && altwidth === altrounded)) {
+            columns.forEach(column => {
+                setWidth(column, round(getWidth(column), 25));
             });
         } else {
-            interact(tile).resizable({
-                edges: { left: true, right: true, bottom: true },
-                listeners: {
-                    start: resizeTileStart,
-                    move: resizeTile,
-                    end: endResizeTile
-                }
+            columns.forEach(column => {
+                setWidth(column, round(getWidth(column), 100 / 3));
             });
         }
-    }
-}
-
-function resizeRow(row, height) {
-    row.style.height = `${height}px`;
-}
-
-function endResize(row, height) {
-    const increment = 200;
-    height = round(height, increment);
-    if (height < increment) {
-        row.style.height = `calc(${increment}px - 10px)`;
-    } else {
-        row.style.height = `calc(${height}px - 10px)`;
-    }
-    saveScreenState();
-}
-
-function makeRowsResizable(column) {
-    const count = column.children.length;
-    for (let i = 0; i < count; i++) {
-        const row = column.children[i];
-        interact(row).resizable({
-            edges: { bottom: true },
-            listeners: {
-                move: (event) => { resizeRow(row, event.rect.height) },
-                end: (event) => { endResize(row, event.rect.height) }
-            }
+    } else if (count === 4) {
+        columns.forEach(column => {
+            setWidth(column, 25);
         });
     }
 }
