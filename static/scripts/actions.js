@@ -102,6 +102,7 @@ async function toggleEditType(type) {
     editing.type = type;
     if (editing.type === 'column') await enableColumnEdit();
     else if (editing.type === 'row') await enableRowEdit();
+    else if (editing.type === 'tile') await enableTileEdit();
 }
 
 async function toggleEditing(override = null) {

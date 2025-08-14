@@ -29,23 +29,6 @@ function removeRow() {
     saveScreenState();
 }
 
-function makeColumnDropzone(column) {
-    interact(column).dropzone({
-        ondragenter: (event) => {
-            console.log('drag enter', event.target);
-            dropzone.element = event.target;
-        },
-        ondragleave: (event) => {
-            const parent = dragged.element.parentNode;
-            if (parent) {
-                console.log('drag leave', event.target);
-                parent.removeChild(dragged.element);
-                dropzone.element = null;
-            }
-        }
-    });
-}
-
 function makeRowDraggable(row) {
     interact(row).draggable({
         listeners: {
@@ -59,7 +42,6 @@ function makeRowDraggable(row) {
 async function disableRowEdit() {
     await fadeOut(dashboard);
     getColumns().forEach(column => {
-        column.classList.remove('editing-child');
         column.removeChild(column.lastElementChild);
         interact(column).unset();
         getRows(column).forEach(row => {
@@ -72,8 +54,7 @@ async function disableRowEdit() {
 
 async function enableRowEdit() {
     getColumns().forEach(column => {
-        column.classList.add('editing-child');
-        makeColumnDropzone(column);
+        makeDragzone(column);
         getRows(column).forEach(row => {
             row.classList.add('editing');
             makeRowDraggable(row);

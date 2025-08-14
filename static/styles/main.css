@@ -166,7 +166,7 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    opacity: 0.5;
+    opacity: 0.7;
     border-radius: 10px;
     background: var(--highlight-dark);
     z-index: 1001;
@@ -185,21 +185,27 @@ body {
     gap: 10px;
 }
 
-.column {
+.column,
+.row,
+.tile {
     display: flex;
-    flex-direction: column;
-    height: auto;
     gap: 10px;
 }
 
-.row {
-    display: flex;
+.column {
+    min-height: 190px;
     flex-direction: column;
-    gap: 10px;
+}
+
+.row,
+.tile {
+    flex-direction: row;
 }
 
 .column.editing,
-.row.editing {
+.row.editing,
+.tile.editing {
+    opacity: 0.7;
     border-radius: 10px;
     background: var(--highlight-light);
     transition:
@@ -208,7 +214,8 @@ body {
 }
 
 .column.editing:hover,
-.row.editing:hover {
+.row.editing:hover,
+.tile.editing:hover {
     background: var(--highlight-dark);
 }
 
@@ -225,29 +232,52 @@ body {
         );
 }
 
-.create-row {
+.create-row,
+.create-tile {
+    opacity: 0.7;
     justify-content: center;
     align-items: center;
-    height: 190px;
     border-radius: 10px;
     outline: 4px solid var(--highlight-light);
     outline-offset: -4px;
-    background: none !important;
     transition: outline-color 0.2s ease-in-out;
     cursor: pointer;
 }
 
-.create-row svg {
+.create-row {
+    height: 190px;
+}
+
+.create-tile {
+    width: 100%;
+    height: 100%;
+}
+
+.create-row svg,
+.create-tile svg {
     width: 50px;
     height: 50px;
     fill: var(--highlight-light);
     transition: fill 0.2s ease-in-out;
 }
 
-.create-row:hover {
+.create-row:hover,
+.create-tile:hover {
     outline-color: var(--highlight-dark);
 }
 
-.create-row:hover > svg {
+.create-row:hover > svg,
+.create-tile:hover > svg {
     fill: var(--highlight-dark);
+}
+
+.create-tile.hidden {
+    display: none;
+}
+
+.row.empty {
+    opacity: 0.7;
+    border-radius: 10px;
+    outline: 4px dashed var(--highlight-light);
+    outline-offset: -4px;
 }
