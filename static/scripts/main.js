@@ -1,3 +1,5 @@
+var dashboard;
+
 const icons = {
     'pencil': null,
     'trash': null,
@@ -8,7 +10,7 @@ const icons = {
 }
 
 function loadFromJSON(json) {
-    const dashboard = document.createElement('div');
+    dashboard = document.createElement('div');
     const columnDiv = document.createElement('div');
     const rowDiv = document.createElement('div');
     const tileDiv = document.createElement('div');
@@ -19,16 +21,26 @@ function loadFromJSON(json) {
     json.columns.forEach(column => {
         const columnClone = columnDiv.cloneNode();
         setWidth(columnClone, column.width);
+        column.rows.forEach(row => {
+            const rowClone = rowDiv.cloneNode();
+            setHeight(rowClone, row.height);
+            columnClone.appendChild(rowClone);
+        });
         dashboard.appendChild(columnClone);
     });
-    return dashboard.outerHTML;
+    return dashboard;
 }
 
 function saveToJSON() {
     const dashboard = { columns: [] };
     document.querySelectorAll('.column').forEach(column => {
-        const columnData = { rows: [] };
+        const columnData = { width: null, rows: [] };
         columnData.width = getWidth(column);
+        column.querySelectorAll('.row').forEach(row => {
+            const rowData = { height: null, tiles: [] };
+            rowData.height = getHeight(row);
+            columnData.rows.push(rowData);
+        });
         dashboard.columns.push(columnData);
     });
     return JSON.stringify(dashboard);

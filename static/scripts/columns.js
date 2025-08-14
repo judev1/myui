@@ -1,75 +1,77 @@
-var newColumn = null;
+function getColumns() {
+    return document.querySelectorAll('.column');
+}
 
 function countColumns() {
-    const dashboard = document.querySelector('.dashboard');
-    return dashboard.querySelectorAll('.column').length;
+    return getColumns().length;
 }
 
 function addColumn() {
-    const dashboard = document.querySelector('.dashboard');
     const column = document.createElement('div');
     column.classList.add('column', 'editing');
     dashboard.appendChild(column);
+
+    const row = addRow(column);
+    row.classList.remove('editing');
 
     const count = countColumns();
     var width = 100 / count;
     setWidth(column, width);
 
-    if (count !== 1) {
+    if (count > 1) {
         makeColumnsResizable();
-    }
-    if (count === 2) {
-        makeColumnsDraggable();
-    } else if (count > 2) {
-        makeColumnDraggable(column);
-        const columns = document.querySelectorAll('.column');
-        if (count === 3) {
-            var quarter = false;
-            columns.forEach(e => {
-                if (getWidth(e) === 25) {
-                    quarter = true;
-                }
-            });
-            if (quarter) {
-                width = 25;
-                setWidth(column, width);
-            }
-        } else if (count === 4) {
-            fadeOut(add);
-            add.removeEventListener('click', addColumn);
-            columns.forEach(e => {
-                interact(e).resizable({
-                    edges: { left: false, right: false },
+        if (count === 2) {
+            makeColumnsDraggable();
+        } else if (count > 2) {
+            makeColumnDraggable(column);
+            if (count === 3) {
+                var quarter = false;
+                getColumns().forEach(e => {
+                    if (getWidth(e) === 25) {
+                        quarter = true;
+                    }
                 });
-            });
+                if (quarter) {
+                    width = 25;
+                    setWidth(column, width);
+                }
+            } else if (count === 4) {
+                fadeOut(actions.add);
+                actions.add.removeEventListener('click', addColumn);
+                getColumns().forEach(e => {
+                    interact(e).resizable({
+                        edges: { left: false, right: false },
+                    });
+                });
+            }
         }
     }
 
-    fitNewChild(dashboard, column, width);
-    resizeElement(column);
+    fitNewChild(dashboard);
     saveScreenState();
 }
 
 function removeColumn() {
-    fadeIn(add);
-    add.addEventListener('click', addColumn);
     dragged.element.remove();
     const parent = dragged.parent;
-    if (countColumns() === 1) {
+    const count = countColumns();
+    if (count === 1) {
         const lastElement = parent.lastElementChild;
         interact(lastElement).unset();
     } else {
+        if (count === 3) {
+            fadeIn(actions.add);
+            actions.add.addEventListener('click', addColumn);
+        }
         makeColumnsResizable();
-        correctColumnWidths();
+        fitChildren(parent);
     }
     saveScreenState();
 }
 
 function makeColumnDraggable(column) {
     column.classList.add('editing');
-    if (countColumns() === 1) {
-        return;
-    }
+    if (countColumns() === 1) return;
     interact(column).draggable({
         listeners: {
             start: startDrag,
@@ -80,17 +82,15 @@ function makeColumnDraggable(column) {
 }
 
 function makeColumnsDraggable() {
-    const dashboard = document.querySelector('.dashboard');
     makeDragzone(dashboard);
-    const columns = document.querySelectorAll('.column');
-    columns.forEach(column => {
+    getColumns().forEach(column => {
         makeColumnDraggable(column);
     });
 }
 
 function makeColumnsResizable() {
-    const columns = document.querySelectorAll('.column');
-    if (columns.length === 0) return;
+    const columns = getColumns();
+    if (columns.length === 4) return;
     columns.forEach((column, i) => {
         var left = true;
         var right = true;
@@ -102,31 +102,31 @@ function makeColumnsResizable() {
         interact(column).resizable({
             edges: { left, right },
             listeners: {
-                start: startResize,
-                move: resizeColumn,
+                move: resize,
                 end: endResize
             }
         });
     });
 }
 
-function viewColumns() {
-    fadeOut(add);
-    add.removeEventListener('click', addColumn);
-    const columns = document.querySelectorAll('.column');
-    columns.forEach(column => {
+function disableColumnEdit() {
+    fadeOut(actions.add);
+    actions.add.removeEventListener('click', addColumn);
+    getColumns().forEach(column => {
         column.classList.remove('editing');
+        interact(column).unset();
     });
-    removeEdit = null;
-    removeElement = null;
-    resizeElement = null;
 }
 
-function editColumns() {
-    if (countColumns() < 4) fadeIn(add);
-    add.addEventListener('click', addColumn);
+function enableColumnEdit() {
+    if (countColumns() < 4) fadeIn(actions.add);
+    actions.add.addEventListener('click', addColumn);
     makeColumnsDraggable();
-    removeEdit = viewColumns;
-    removeElement = removeColumn;
-    resizeElement = correctColumnWidths;
+    makeColumnsResizable();
+    editing.disable = disableColumnEdit;
+    editing.add = addColumn;
+    editing.remove = removeColumn;
+    editing.increment = 100 / 12;
+    editing.minimum = editing.increment * 3;
+    editing.resize = 'width';
 }

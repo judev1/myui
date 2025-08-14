@@ -1,123 +1,144 @@
-var add = null;
-var trash = null;
-var editing = false;
+const actions = {
+    add: null,
+    remove: null,
+    edit: null,
+    tileEdit: null,
+    rowEdit: null,
+    columnEdit: null,
+    editTypes: [],
+    back: null
+}
 
-var removeEdit = null;
-var removeElement = null;
-var resizeElement = null;
+const editing = {
+    active: false,
+    type: null,
+    disable: null,
+    add: null,
+    remove: null,
+    increment: null,
+    minimum: null,
+    resize: null
+}
 
 function addActions() {
     const body = document.body;
     const navbar = document.querySelector('.navigation');
 
-    const edit = document.createElement('div');
-    edit.id = 'edit';
-    edit.classList.add('action', 'edit');
-    edit.addEventListener('click', () => toggleEditing());
-    edit.appendChild(icons['pencil']);
-    body.appendChild(edit);
+    actions.edit = document.createElement('div');
+    actions.edit.id = 'edit';
+    actions.edit.classList.add('action', 'edit');
+    actions.edit.addEventListener('click', () => toggleEditing());
+    actions.edit.appendChild(icons['pencil']);
+    body.appendChild(actions.edit);
 
-    add = document.createElement('div');
-    add.id = 'spawn';
-    add.classList.add('action', 'spawn', 'add');
-    add.appendChild(icons['plus']);
-    body.appendChild(add);
+    actions.add = document.createElement('div');
+    actions.add.id = 'spawn';
+    actions.add.classList.add('action', 'spawn', 'add');
+    actions.add.appendChild(icons['plus']);
+    body.appendChild(actions.add);
 
-    trash = document.createElement('div');
-    trash.id = 'trash';
-    trash.classList.add('action', 'spawn', 'trash');
-    trash.appendChild(icons['trash']);
-    body.appendChild(trash);
+    actions.remove = document.createElement('div');
+    actions.remove.id = 'trash';
+    actions.remove.classList.add('action', 'spawn', 'trash');
+    actions.remove.appendChild(icons['trash']);
+    body.appendChild(actions.remove);
 
-    interact(trash).dropzone({
+    interact(actions.remove).dropzone({
         ondragenter: (event) => {
             dropzone.element = event.target;
         }
     });
 
-    const tileEdit = document.createElement('div');
-    tileEdit.id = 'tile-edit';
-    tileEdit.classList.add('action', 'edit-type', 'edit-tile');
-    tileEdit.appendChild(icons['tile']);
-    tileEdit.addEventListener('click', () => toggleEditType(tileEdit));
-    body.appendChild(tileEdit);
+    actions.tileEdit = document.createElement('div');
+    actions.tileEdit.id = 'tile-edit';
+    actions.tileEdit.classList.add('action', 'edit-type', 'edit-tile');
+    actions.tileEdit.appendChild(icons['tile']);
+    actions.tileEdit.addEventListener('click', () => toggleEditType('tile'));
+    body.appendChild(actions.tileEdit);
+    actions.editTypes.push(actions.tileEdit);
 
-    const rowEdit = document.createElement('div');
-    rowEdit.id = 'row-edit';
-    rowEdit.classList.add('action', 'edit-type', 'edit-row');
-    rowEdit.appendChild(icons['row']);
-    rowEdit.addEventListener('click', () => toggleEditType(rowEdit));
-    body.appendChild(rowEdit);
+    actions.rowEdit = document.createElement('div');
+    actions.rowEdit.id = 'row-edit';
+    actions.rowEdit.classList.add('action', 'edit-type', 'edit-row');
+    actions.rowEdit.appendChild(icons['row']);
+    actions.rowEdit.addEventListener('click', () => toggleEditType('row'));
+    body.appendChild(actions.rowEdit);
+    actions.editTypes.push(actions.rowEdit);
 
-    const columnEdit = document.createElement('div');
-    columnEdit.id = 'column-edit';
-    columnEdit.classList.add('action', 'edit-type', 'edit-column');
-    columnEdit.appendChild(icons['column']);
-    columnEdit.addEventListener('click', () => toggleEditType(columnEdit));
-    body.appendChild(columnEdit);
+    actions.columnEdit = document.createElement('div');
+    actions.columnEdit.id = 'column-edit';
+    actions.columnEdit.classList.add('action', 'edit-type', 'edit-column');
+    actions.columnEdit.appendChild(icons['column']);
+    actions.columnEdit.addEventListener('click', () => toggleEditType('column'));
+    body.appendChild(actions.columnEdit);
+    actions.editTypes.push(actions.columnEdit);
 
-    const back = document.createElement('div');
-    back.id = 'back';
-    back.classList.add('back', 'item');
-    back.addEventListener('click', () => navigateBack());
-    back.innerHTML = 'Back';
-    navbar.appendChild(back);
+    actions.back = document.createElement('div');
+    actions.back.id = 'back';
+    actions.back.classList.add('back', 'item');
+    actions.back.addEventListener('click', () => navigateBack());
+    actions.back.innerHTML = 'Back';
+    navbar.appendChild(actions.back);
 
-    makeFadable(edit);
-    makeFadable(add);
-    makeFadable(trash);
+    makeFadable(actions.edit);
+    makeFadable(actions.add);
+    makeFadable(actions.remove);
 
-    makeFadable(tileEdit);
-    makeFadable(rowEdit);
-    makeFadable(columnEdit);
+    makeFadable(actions.tileEdit);
+    makeFadable(actions.rowEdit);
+    makeFadable(actions.columnEdit);
 
-    makeFadable(back);
+    makeFadable(actions.back);
 }
 
-function toggleEditType(element) {
-    if (removeEdit) {
-        removeEdit();
-    }
-    element.parentNode.querySelectorAll('.edit-type').forEach(e => {
-        if (e === element) {
-            e.classList.add('active');
-        } else {
-            e.classList.remove('active');
-        }
+function toggleEditType(type) {
+    if (editing.disable) editing.disable();
+    resetEditing();
+    editing.active = true;
+    actions.editTypes.forEach(e => {
+        if (e.id === type + '-edit') e.classList.add('active');
+        else e.classList.remove('active');
     });
-    const type = element.id;
-    if (type === 'column-edit') {
-        editColumns();
-    }
+    editing.type = type;
+    if (editing.type === 'column') enableColumnEdit();
 }
 
 function toggleEditing(override = null) {
-    editing = override !== null ? override : !editing;
-    const edit = document.getElementById('edit');
-    fadeIn(edit);
-    if (editing) {
-        edit.classList.add('active');
-        document.querySelectorAll('.edit-type').forEach(editType => {
-            editType.classList.add('editing');
-            fadeIn(editType);
+    editing.active = override === true || !editing.active;
+    if (editing.active) {
+        fadeIn(actions.edit);
+        actions.edit.classList.add('active');
+        actions.editTypes.forEach(e => {
+            e.classList.add('editing');
+            fadeIn(e);
         });
     } else {
-        fadeOut(add);
-        edit.classList.remove('active');
-        document.querySelectorAll('.edit-type').forEach(editType => {
-            editType.classList.remove('editing', 'active');
-            fadeOut(editType);
+        fadeOut(actions.add);
+        actions.edit.classList.remove('active');
+        actions.editTypes.forEach(e => {
+            e.classList.remove('editing', 'active');
+            fadeOut(e);
         });
-        if (removeEdit) {
-            removeEdit();
-        }
+        if (editing.disable) editing.disable();
+        resetEditing();
     }
 }
 
+function resetEditing() {
+    editing.active = false;
+    editing.type = null;
+    editing.disable = null;
+    editing.add = null;
+    editing.remove = null;
+    editing.increment = null;
+    editing.minimum = null;
+    editing.resize = null;
+}
+
 function activateTrash() {
-    fadeIn(trash);
+    fadeIn(actions.remove);
 }
 
 function deactivateTrash() {
-    fadeOut(trash);
+    fadeOut(actions.remove);
 }

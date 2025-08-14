@@ -33,7 +33,6 @@ function dragLeave(event) {
         dropzone.element = null;
         dropzone.widths = null;
         fitChildren(parent);
-        resizeElement();
     }
 }
 
@@ -92,7 +91,6 @@ function onDrag(event) {
         if (!element.parentNode) {
             parent.appendChild(element)
             fitNewChild(parent, element)
-            resizeElement(element);
         } else {
             parent.appendChild(element)
         }
@@ -113,7 +111,7 @@ function endDrag(event) {
     if (dropzone.element) {
         const parent = dragged.parent;
         if (dropzone.element === trash) {
-            removeElement();
+            editing.remove(dragged.element);
             fitChildren(parent);
         }
     } else {

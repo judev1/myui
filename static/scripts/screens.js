@@ -34,28 +34,21 @@ function saveScreenState() {
 }
 
 function preLoadUpdate() {
-    const edit = document.getElementById('edit');
-    edit.classList.remove('active');
-    editing = false
-    const back = document.getElementById('back');
+    actions.edit.classList.remove('active');
+    editing.active = false;
     if (navigation.length === 1) {
-        fadeOut(back);
+        fadeOut(actions.back);
     }
 }
 
 function postLoadUpdate() {
-    const edit = document.getElementById('edit');
-    fadeIn(edit);
-
-    const back = document.getElementById('back');
-    if (navigation.length > 1) {
-        fadeIn(back);
-    }
+    fadeIn(actions.edit);
+    if (navigation.length > 1) fadeIn(actions.back);
 }
 
-async function loadElement(element, html) {
-    element.innerHTML = html;
-    await fadeIn(element);
+async function loadElement(parent, element) {
+    parent.appendChild(element);
+    await fadeIn(parent);
 }
 
 function unloadElement(element) {
@@ -70,15 +63,15 @@ function unloadElement(element) {
 async function loadScreen(screen) {
     const response = await fetch('/page/' + screen, {method: 'GET'});
     const json = await response.json();
-    const html = loadFromJSON(json);
+    const element = loadFromJSON(json);
 
     preLoadUpdate();
 
-    const element = document.querySelector('.content');
-    await unloadElement(element);
+    const content = document.querySelector('.content');
+    await unloadElement(content);
 
     postLoadUpdate();
     updateLinks();
 
-    await loadElement(element, html);
+    await loadElement(content, element);
 }
