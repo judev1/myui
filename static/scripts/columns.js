@@ -15,7 +15,7 @@ function addColumn() {
     row.classList.remove('editing');
 
     const count = countColumns();
-    var width = 100 / count;
+    var width = 100 / (count - 1);
     setWidth(column, width);
 
     if (count > 1) {
@@ -82,7 +82,6 @@ function makeColumnDraggable(column) {
 }
 
 function makeColumnsDraggable() {
-    makeDragzone(dashboard);
     getColumns().forEach(column => {
         makeColumnDraggable(column);
     });
@@ -109,24 +108,27 @@ function makeColumnsResizable() {
     });
 }
 
-function disableColumnEdit() {
+async function disableColumnEdit() {
     fadeOut(actions.add);
+    await fadeOut(dashboard);
     actions.add.removeEventListener('click', addColumn);
     getColumns().forEach(column => {
         column.classList.remove('editing');
         interact(column).unset();
     });
+    interact(dashboard).unset();
 }
 
-function enableColumnEdit() {
+async function enableColumnEdit() {
     if (countColumns() < 4) fadeIn(actions.add);
     actions.add.addEventListener('click', addColumn);
+    makeDragzone(dashboard);
     makeColumnsDraggable();
     makeColumnsResizable();
     editing.disable = disableColumnEdit;
-    editing.add = addColumn;
     editing.remove = removeColumn;
     editing.increment = 100 / 12;
     editing.minimum = editing.increment * 3;
-    editing.resize = 'width';
+    editing.axis = 'x';
+    await fadeIn(dashboard);
 }

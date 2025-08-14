@@ -30,7 +30,6 @@ function dragLeave(event) {
                 setWidth(child, dropzone.widths[i]);
             });
         }
-        dropzone.element = null;
         dropzone.widths = null;
         fitChildren(parent);
     }
@@ -46,15 +45,18 @@ function startDrag(event) {
 
     dragged.element = element
     dragged.parent = parent;
+    dragged.index = Array.from(children).indexOf(element);
 
     const rect = element.getBoundingClientRect();
     dummy.style.height = `${rect.height}px`;
     dummy.style.width = `${rect.width}px`;
 
-    dragged.width = rect.width;
-    dragged.widths = Array.from(children).map(
-        child => getWidth(child)
-    );
+    if (editing.axis === 'x') {
+        dragged.width = rect.width;
+        dragged.widths = Array.from(children).map(
+            child => getWidth(child)
+        );
+    }
 
     dummy.style.display = 'flex';
 }
@@ -80,27 +82,53 @@ function onDrag(event) {
 
     dummy.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
 
-    const parent = dragged.parent;
-    const element = dragged.element;
-    const parentRect = parent.getBoundingClientRect()
-
     if (dropzone.element) {
         if (dropzone.element === trash) return;
-        if (event.pageX < parentRect.left) return;
-        if (event.pageX > parentRect.right) return;
-        if (!element.parentNode) {
-            parent.appendChild(element)
-            fitNewChild(parent, element)
-        } else {
-            parent.appendChild(element)
+        if (editing.axis === 'x') sortHorizontal(event);
+        else if (editing.axis === 'y') sortVertical(event);
+    }
+}
+
+function sortHorizontal(event) {
+    const parent = dropzone.element;
+    const element = dragged.element;
+    const parentRect = parent.getBoundingClientRect();
+
+    if (event.pageX < parentRect.left) return;
+    if (event.pageX > parentRect.right) return;
+    if (!element.parentNode) {
+        parent.appendChild(element);
+        fitNewChild(parent, element);
+    } else {
+        parent.appendChild(element);
+    }
+    const children = Array.from(parent.children);
+    for (i = 0; i < children.length; i++) {
+        const rect = children[i].getBoundingClientRect();
+        if (event.pageX < rect.left + rect.width + 5) {
+            parent.insertBefore(element, children[i]);
+            break;
         }
-        const children = Array.from(parent.children);
-        for (i = 0; i < children.length; i++) {
-            const rect = children[i].getBoundingClientRect();
-            if (event.pageX < rect.left + rect.width + 5) {
-                parent.insertBefore(element, children[i]);
-                break
-            }
+    }
+}
+
+function sortVertical(event) {
+    const parent = dropzone.element;
+    const element = dragged.element;
+    const parentRect = parent.getBoundingClientRect();
+
+    if (event.pageY < parentRect.top) return;
+    if (event.pageY > parentRect.bottom) return;
+    parent.appendChild(element);
+    const children = Array.from(parent.children);
+    for (i = 0; i < children.length; i++) {
+        if (i === children.length - 1) {
+            parent.insertBefore(element, children[i - 1]);
+        }
+        const rect = children[i].getBoundingClientRect();
+        if (event.pageY < rect.top + rect.height + 5) {
+            parent.insertBefore(element, children[i]);
+            break;
         }
     }
 }
@@ -112,7 +140,7 @@ function endDrag(event) {
         const parent = dragged.parent;
         if (dropzone.element === trash) {
             editing.remove(dragged.element);
-            fitChildren(parent);
+            if (editing.axis === 'x') fitChildren(parent);
         }
     } else {
         const parent = dragged.parent;
@@ -121,9 +149,11 @@ function endDrag(event) {
             dragged.element,
             children[dragged.index]
         );
-        dragged.widths.forEach((width, i) => {
-            setWidth(children[i], width);
-        });
+        if (editing.axis === 'x') {
+            dragged.widths.forEach((width, i) => {
+                setWidth(children[i], width);
+            });
+        }
     }
 
     dragged.element.classList.remove('shadow')

@@ -9,6 +9,10 @@ const icons = {
     'column': null
 }
 
+async function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function loadFromJSON(json) {
     dashboard = document.createElement('div');
     const columnDiv = document.createElement('div');
@@ -37,6 +41,7 @@ function saveToJSON() {
         const columnData = { width: null, rows: [] };
         columnData.width = getWidth(column);
         column.querySelectorAll('.row').forEach(row => {
+            if (row.classList.contains('create-row')) return;
             const rowData = { height: null, tiles: [] };
             rowData.height = getHeight(row);
             columnData.rows.push(rowData);

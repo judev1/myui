@@ -124,7 +124,6 @@ body {
 }
 
 .action.spawn {
-    /* center along x axis */
     right: calc(50% - 30px);
     bottom: 30px;
     width: 30px;
@@ -165,13 +164,11 @@ body {
 .dummy {
     display: none;
     position: fixed;
-    /* width: 100px;
-    height: 200px; */
     top: 0;
     left: 0;
     opacity: 0.5;
     border-radius: 10px;
-    background: var(--highlight-light);
+    background: var(--highlight-dark);
     z-index: 1001;
 }
 
@@ -191,104 +188,66 @@ body {
 .column {
     display: flex;
     flex-direction: column;
-    width: 100%;
-    height: 100%;
-    min-height: 200px;
-    gap: 10px;
-    /* outline: 2px solid transparent;
-    transition: outline 0.2s ease-in-out; */
-}
-
-.column.editing {
-    opacity: 0.5;
-    border-radius: 10px;
-    background: var(--highlight-light);
-}
-
-.editing.shadow {
-    outline: 2px solid var(--highlight);
-    background:
-        repeating-linear-gradient(
-            45deg,
-            var(--highlight),
-            var(--highlight) 2px,
-            transparent 2px,
-            transparent 20px
-        );
-}
-
-
-/* .content {
-    width: 100%;
-}
-
-.dashboard {
-    display: flex;
-    flex-direction: row;
-    width: calc(100% - 40px);
-    height: calc(100% - 40px);
-    padding: 20px;
-    gap: 10px;
-}
-
-.column {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
+    height: auto;
     gap: 10px;
 }
 
 .row {
     display: flex;
-    flex-direction: row;
-    width: 100%;
-    height: 190px;
+    flex-direction: column;
     gap: 10px;
-    border-radius: 10px;
-    outline: 2px dashed transparent;
 }
 
-.row.empty {
-    height: 190px;
-    outline: 2px dashed var(--highlight-light);
-    border-radius: 10px;
-}
-
-.row.empty.active {
-    outline: none;
-}
-
-.tile {
-    display: flex;
-    height: 100%;
-    background: transparent;
-    outline: 2px dashed var(--highlight-light);
-    transition:
-        background 0.2s ease-in-out,
-        outline 0.2s ease-in-out,
-        border-radius 0.2s ease-in-out;
-}
-
-.tile.edit {
+.column.editing,
+.row.editing {
     border-radius: 10px;
     background: var(--highlight-light);
-    outline: 2px dashed transparent;
+    transition:
+        outline-color 0.2s ease-in-out,
+        background 0.2s ease-in-out;
 }
 
-.dragging {
-    opacity: 0.5;
+.column.editing:hover,
+.row.editing:hover {
+    background: var(--highlight-dark);
 }
 
-.tile.shadow {
-    opacity: 0.3;
+.editing.shadow {
+    outline: 4px solid var(--highlight-light);
+    outline-offset: -4px;
     background:
         repeating-linear-gradient(
             45deg,
-            var(--highlight-dark),
-            var(--highlight-dark) 2px,
-            transparent 2px,
+            var(--highlight-light),
+            var(--highlight-light) 4px,
+            transparent 4px,
             transparent 20px
         );
-    outline: 2px solid var(--highlight-dark);
-} */
+}
+
+.create-row {
+    justify-content: center;
+    align-items: center;
+    height: 190px;
+    border-radius: 10px;
+    outline: 4px solid var(--highlight-light);
+    outline-offset: -4px;
+    background: none !important;
+    transition: outline-color 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.create-row svg {
+    width: 50px;
+    height: 50px;
+    fill: var(--highlight-light);
+    transition: fill 0.2s ease-in-out;
+}
+
+.create-row:hover {
+    outline-color: var(--highlight-dark);
+}
+
+.create-row:hover > svg {
+    fill: var(--highlight-dark);
+}

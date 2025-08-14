@@ -64,6 +64,7 @@ async function loadScreen(screen) {
     const response = await fetch('/page/' + screen, {method: 'GET'});
     const json = await response.json();
     const element = loadFromJSON(json);
+    makeFadable(element);
 
     preLoadUpdate();
 

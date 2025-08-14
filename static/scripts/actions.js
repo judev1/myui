@@ -13,11 +13,10 @@ const editing = {
     active: false,
     type: null,
     disable: null,
-    add: null,
     remove: null,
     increment: null,
     minimum: null,
-    resize: null
+    axis: null
 }
 
 function addActions() {
@@ -91,8 +90,9 @@ function addActions() {
     makeFadable(actions.back);
 }
 
-function toggleEditType(type) {
-    if (editing.disable) editing.disable();
+async function toggleEditType(type) {
+    if (editing.type === type) return;
+    if (editing.disable) await editing.disable();
     resetEditing();
     editing.active = true;
     actions.editTypes.forEach(e => {
@@ -100,10 +100,11 @@ function toggleEditType(type) {
         else e.classList.remove('active');
     });
     editing.type = type;
-    if (editing.type === 'column') enableColumnEdit();
+    if (editing.type === 'column') await enableColumnEdit();
+    else if (editing.type === 'row') await enableRowEdit();
 }
 
-function toggleEditing(override = null) {
+async function toggleEditing(override = null) {
     editing.active = override === true || !editing.active;
     if (editing.active) {
         fadeIn(actions.edit);
@@ -113,6 +114,7 @@ function toggleEditing(override = null) {
             fadeIn(e);
         });
     } else {
+        fadeOut(dashboard);
         fadeOut(actions.add);
         actions.edit.classList.remove('active');
         actions.editTypes.forEach(e => {
@@ -128,11 +130,10 @@ function resetEditing() {
     editing.active = false;
     editing.type = null;
     editing.disable = null;
-    editing.add = null;
     editing.remove = null;
     editing.increment = null;
     editing.minimum = null;
-    editing.resize = null;
+    editing.axis = null;
 }
 
 function activateTrash() {
