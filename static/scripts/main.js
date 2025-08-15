@@ -28,6 +28,11 @@ function loadFromJSON(json) {
         column.rows.forEach(row => {
             const rowClone = rowDiv.cloneNode();
             setHeight(rowClone, row.height);
+            row.tiles.forEach(tile => {
+                const tileClone = tileDiv.cloneNode();
+                setWidth(tileClone, tile.width);
+                rowClone.appendChild(tileClone);
+            });
             columnClone.appendChild(rowClone);
         });
         dashboard.appendChild(columnClone);
@@ -43,6 +48,11 @@ function saveToJSON() {
         column.querySelectorAll('.row').forEach(row => {
             if (row.classList.contains('create-row')) return;
             const rowData = { height: null, tiles: [] };
+            row.querySelectorAll('.tile').forEach(tile => {
+                if (tile.classList.contains('create-tile')) return;
+                const tileData = { width: getWidth(tile) };
+                rowData.tiles.push(tileData);
+            });
             rowData.height = getHeight(row);
             columnData.rows.push(rowData);
         });

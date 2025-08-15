@@ -23,6 +23,7 @@ function dragEnter(event) {
             dropzone.createTile = child;
             dropzone.element.removeChild(child);
             dropzone.element.appendChild(dragged.element);
+            setWidth(dragged.element, 100);
         }
     }
     if (editing.axis === 'x') {
@@ -43,6 +44,7 @@ function dragEnter(event) {
     if (dropzone.element.classList.contains('empty')) {
         dropzone.element.classList.remove('empty');
         dropzone.element.appendChild(dragged.element);
+        setWidth(dragged.element, 100);
     }
 }
 
@@ -96,6 +98,9 @@ function startDrag(event) {
         dragged.widths = Array.from(children).map(
             child => getWidth(child)
         );
+        if (children.length === 4) {
+            makeDragzone(parent);
+        }
     }
 
     dummy.style.display = 'flex';
@@ -136,9 +141,6 @@ function sortHorizontal(event) {
 
     if (event.pageX < parentRect.left) return;
     if (event.pageX > parentRect.right) return;
-    if (parent.children.length === 1 && parent.firstElementChild === element) {
-        setWidth(element, 100);
-    }
     if (!element.parentNode) {
         parent.appendChild(element);
         fitNewChild(parent);
@@ -185,10 +187,14 @@ function endDrag(event) {
             editing.remove(dragged.element);
             if (editing.axis === 'x') fitChildren(parent);
         }
-
-    if (dragged.parent.classList.contains('empty')) {
-        addCreateTile(dragged.parent);
-    }
+        if (parent.classList.contains('empty')) {
+            addCreateTile(parent);
+        }
+        if (parent.classList.contains('row')) {
+            makeTilesResizable(dropzone.element);
+            makeTilesResizable(parent);
+            saveScreenState();
+        }
     } else {
         const parent = dragged.parent;
         const children = parent.children;
@@ -200,6 +206,9 @@ function endDrag(event) {
             dragged.widths.forEach((width, i) => {
                 setWidth(children[i], width);
             });
+        }
+        if (children.length === 4) {
+            interact(parent).unset();
         }
     }
 

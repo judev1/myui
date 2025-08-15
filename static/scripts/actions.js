@@ -1,5 +1,6 @@
 const actions = {
     add: null,
+    cancel: null,
     remove: null,
     edit: null,
     tileEdit: null,
@@ -31,10 +32,16 @@ function addActions() {
     body.appendChild(actions.edit);
 
     actions.add = document.createElement('div');
-    actions.add.id = 'spawn';
+    actions.add.id = 'add';
     actions.add.classList.add('action', 'spawn', 'add');
     actions.add.appendChild(icons['plus']);
     body.appendChild(actions.add);
+
+    actions.cancel = document.createElement('div');
+    actions.cancel.id = 'cancel';
+    actions.cancel.classList.add('action', 'spawn', 'cancel');
+    actions.cancel.appendChild(icons['plus'].cloneNode(true));
+    body.appendChild(actions.cancel);
 
     actions.remove = document.createElement('div');
     actions.remove.id = 'trash';
@@ -81,6 +88,7 @@ function addActions() {
 
     makeFadable(actions.edit);
     makeFadable(actions.add);
+    makeFadable(actions.cancel);
     makeFadable(actions.remove);
 
     makeFadable(actions.tileEdit);
